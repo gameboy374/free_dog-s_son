@@ -1,6 +1,0 @@
----- txFCTRL Matches (5 in 1 files) ----
-{anondwt_local_data_t} in deca_device.c (decadriver) :     uint32      txFCTRL ;           // Keep TX_FCTRL register config
-dwt_configure in deca_device.c (decadriver) :     pdw1000local->txFCTRL = ((config->txPreambLength | config->prf) << TX_FCTRL_TXPRF_SHFT) | (config->dataRate << TX_FCTRL_TXBR_SHFT);
-dwt_configure in deca_device.c (decadriver) :     dwt_write32bitreg(TX_FCTRL_ID, pdw1000local->txFCTRL);
-dwt_writetxfctrl in deca_device.c (decadriver) :     // pdw1000local->txFCTRL has kept configured bit rate information
-dwt_writetxfctrl in deca_device.c (decadriver) :     uint32 reg32 = pdw1000local->txFCTRL | txFrameLength | (txBufferOffset << TX_FCTRL_TXBOFFS_SHFT) | (ranging << TX_FCTRL_TR_SHFT);
