@@ -100,6 +100,49 @@ char dist_str[16] = {0};
 static uint64 get_tx_timestamp_u64(void);
 static uint64 get_rx_timestamp_u64(void);
 static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts);
+static bool irq_flag = false;
+
+static void uwb_irq_callback(void)
+{
+    irq_flag = true;
+}
+
+static void uwb_handle_interrupt(void) {
+    uint32 sysstatus = 0;
+	// read current status and handle events
+	//SYS_STATUS_ID register length is 5,but this function only use the low 4 bytes
+	sysstatus = dwt_read32bitreg(SYS_STATUS_ID);
+	//check clock error
+	if(sysstatus & SYS_STATUS_CLKPLL_LL & SYS_STATUS_RFPLL_LL) {
+		 /* TODO handle error */ 
+		 break;
+	}
+	
+	//TX Over
+	if(sysstatus & SYS_STATUS_TXFRS) {
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_TX); // Clear TX event bits
+		algorithm->onEvent(eventPacketSent);
+	}
+	
+	//Receive OK
+	if(sysstatus & SYS_STATUS_RXFCG) {
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_GOOD); // Clear all receive status bits
+        algorithm->onEvent(eventPacketReceived);
+	}
+
+	//Receive Timeout
+	if(sysstatus & SYS_STATUS_ALL_RX_TO) {
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXRFTO); // Clear RX timeout event bits
+        algorithm->onEvent(eventReceiveTimeout);
+	}
+
+	//Receive Error
+	if(sysstatus & SYS_STATUS_ALL_RX_ERR)
+	{
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_ERR); // Clear RX error event bits
+        algorithm->onEvent(eventReceiveFailed);
+	}
+}
 
 void uwb_init(void)
 {
@@ -116,9 +159,9 @@ void uwb_init(void)
     }
     spi_set_rate_high();
 
-    /* Configure DW1000. See NOTE 7 below. */
     dwt_configure(&ic_config);
-
+    port_set_deca_isr(uwb_irq_callback);
+    dwt_setinterrupt(SYS_MASK_MTXFRS|SYS_MASK_MRXFCG|SYS_MASK_MRXRFTO, ENABLE);
     /* Apply default antenna delay value. See NOTE 1 below. */
     dwt_setrxantennadelay(RX_ANT_DLY);
     dwt_settxantennadelay(TX_ANT_DLY);
@@ -128,4 +171,13 @@ void uwb_init(void)
 
     algorithm = availableAlgorithms[CURRENT_TAG].algorithm;
     algorithm->init(&config_t);
+}
+
+void uwb_task(void)
+{
+    if(irq_flag)
+    {
+        uwb_handle_interrupt();
+        irq_flag = false;
+    }
 }

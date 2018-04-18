@@ -91,25 +91,33 @@ static void txcallback(DwDevice_st *dev)
 #define LPP_PAYLOAD 4
 
 static void rxcallback(DwDevice_st *dev) {
-  dwTime_t arival = { .full=0 };
-  int dataLength = DW_GetDataLength(dev);
-  int payloadLength = 2;
+    dwTime_t arival = { .full=0 };
+    int dataLength = 0;
+    int payloadLength = 2;
 
-  if (dataLength == 0) return;
+    /* A frame has been received, read it into the local buffer. */
+    dataLength = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFL_MASK_1023;
 
-  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);
+    if (dataLength == 0) return;
 
-  debug("RXCallback(%d): ", dataLength);
+    memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);
 
-  DW_GetData(dev, (uint8_t*)&rxPacket, dataLength);
+    debug("RXCallback(%d): ", dataLength);
 
-  if (memcmp(rxPacket.destAddress, config.address, 8)) {
-    debug("Not for me! for %02x with %02x\r\n", rxPacket.destAddress[0], rxPacket.payload[0]);
-    DW_NewReceive(dev);
-    DW_SetDefaults(dev);
-    DW_StartReceive(dev);
-    return;
-  }
+    dwt_readrxdata(rx_buffer, dataLength, 0);
+
+    if (memcmp(rxPacket.destAddress, config.address, 8))
+    {
+        debug("Not for me! for %02x with %02x\r\n", rxPacket.destAddress[0], rxPacket.payload[0]);
+        /* Clear reception timeout to start next ranging process. */
+        dwt_setrxtimeout(0);
+        dwt_forcetrxoff();
+        dwt_rxreset();
+        /* Activate reception immediately. */
+        dwt_rxenable(DWT_START_RX_IMMEDIATE);
+
+        return;
+    }
 
   memcpy(txPacket.destAddress, rxPacket.sourceAddress, 8);
   memcpy(txPacket.sourceAddress, rxPacket.destAddress, 8);

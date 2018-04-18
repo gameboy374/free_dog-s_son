@@ -34,7 +34,7 @@ int main(void)
     /* Loop forever responding to ranging requests. */
     while (1)
     {
-
+        uwb_task();
     }
 }
 

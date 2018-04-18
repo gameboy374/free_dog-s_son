@@ -33,7 +33,7 @@ void SysTick_Handler(void)
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * @fn EXTI9_5_IRQHandler()
+ * @fn EXTI3_IRQHandler()
  *
  * @brief Handler for DW1000 IRQ.
  *
@@ -41,12 +41,12 @@ void SysTick_Handler(void)
  *
  * @return none
  */
-void EXTI9_5_IRQHandler(void)
+void EXTI3_IRQHandler(void)
 {
-    do
+    if(port_CheckEXT_IRQ() == 1)
     {
         port_deca_isr();
-    } while (port_CheckEXT_IRQ() == 1);
+    }
     /* Clear EXTI Line 5 Pending Bit */
     EXTI_ClearITPendingBit(DECAIRQ_EXTI);
 }

@@ -28,5 +28,5 @@ typedef struct uwbAlgorithm_s {
 extern uwbAlgorithm_t uwbTwrAnchorAlgorithm;
 extern uwbAlgorithm_t uwbTwrTagAlgorithm;
 void uwb_init(void);
-
+void uwb_task(void);
 #endif
