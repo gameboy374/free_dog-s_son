@@ -51,7 +51,7 @@ void _dwt_loaducodefromrom(void);
 // Read non-volatile memory
 uint32 _dwt_otpread(uint32 address);
 // Program the non-volatile memory
-uint32 _dwt_otpprogword32(uint32 data, uint16 address);
+int32 _dwt_otpprogword32(uint32 data, uint16 address);
 // Upload the device configuration into always on memory
 void _dwt_aonarrayupload(void);
 // -------------------------------------------------------------------------------------------------------------------
@@ -1379,7 +1379,7 @@ uint32 _dwt_otpread(uint32 address)
  *
  * returns DWT_SUCCESS for success, or DWT_ERROR for error
  */
-uint32 _dwt_otpsetmrregs(int mode)
+int32 _dwt_otpsetmrregs(int mode)
 {
     uint8 rd_buf[4];
     uint8 wr_buf[4];
@@ -1545,7 +1545,7 @@ uint32 _dwt_otpsetmrregs(int mode)
  *
  * returns DWT_SUCCESS for success, or DWT_ERROR for error
  */
-uint32 _dwt_otpprogword32(uint32 data, uint16 address)
+int32 _dwt_otpprogword32(uint32 data, uint16 address)
 {
     uint8 rd_buf[1];
     uint8 wr_buf[4];

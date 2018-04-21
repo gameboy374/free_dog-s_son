@@ -952,12 +952,12 @@ int is_IRQ_enabled(void)
  *
  * @return none
  */
+#if (EVB1000_LCD_SUPPORT == 1)	
 static void LCD_Configuration(void)
 {
     unsigned char initseq[9] = { 0x39, 0x14, 0x55, 0x6D, 0x78, 0x38, 0x0C, 0x01, 0x06 };
     unsigned char command = 0x0;
 
-#if (EVB1000_LCD_SUPPORT == 1)
     // Write initialisation sequence.
     writetoLCD(9, 0, initseq);
     sleep_ms(10);
@@ -967,8 +967,8 @@ static void LCD_Configuration(void)
     writetoLCD(1, 0, &command);
     command = 0x1;
     writetoLCD(1, 0, &command);
-#endif
 }
+#endif
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * @fn spi_peripheral_init()
